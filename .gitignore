@@ -28,3 +28,12 @@ CLAUDE.local.md
 .claude/settings.local.json
 .playwright-mcp/
 docs/remediation/changes/
+.venv-*/
+.pytest_cache/
+.coverage*
+htmlcov/
+coverage.xml
+artifacts/
+playwright-report/
+test-results/
+config/*.local.yaml

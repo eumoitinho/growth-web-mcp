@@ -30,7 +30,7 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
 export function serveStateless(
   name: string,
   factory: () => McpServer | Server,
-): void {
+) {
   const port = Number(process.env.PORT ?? 8080);
 
   const httpServer = createServer(async (req, res) => {
@@ -86,4 +86,5 @@ export function serveStateless(
   httpServer.listen(port, "0.0.0.0", () => {
     console.error(`[${name}] listening on :${port}/mcp`);
   });
+  return httpServer;
 }

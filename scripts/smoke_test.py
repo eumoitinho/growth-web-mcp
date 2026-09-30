@@ -66,6 +66,8 @@ async def main() -> None:
             if args.call:
                 name, raw = args.call
                 result = await session.call_tool(name, json.loads(raw))
+                if result.isError:
+                    raise RuntimeError(f"MCP tool {name!r} returned isError=true")
                 for part in result.content:
                     print(getattr(part, "text", part))
 
