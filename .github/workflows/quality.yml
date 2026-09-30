@@ -1,0 +1,100 @@
+name: Quality
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 5 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  python-and-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements-test.txt -e servers/ga4
+      - run: python -m playwright install --with-deps chromium
+      - run: python scripts/hooks/test_hooks.py
+      - run: python -m pytest tests/unit tests/contracts tests/journeys tests/e2e --cov=growth_qa --cov-branch --cov-fail-under=75 --cov-report=xml --cov-report=term-missing --junitxml=artifacts/python.xml
+      - run: python scripts/render_bq.py --project example-project
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: python-validation
+          path: |
+            coverage.xml
+            artifacts/python.xml
+          retention-days: 14
+  gateway-and-ads:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # FastMCP 4 uses MCP 2; GA4/Meta are tested in the separate MCP 1 job.
+      - run: pip install -e servers/gateway google-ads-mcp==0.0.4 pytest pytest-asyncio pytest-cov
+      - run: python -m pytest tests/gateway tests/ads --cov=growth_gateway --cov-report=term-missing --junitxml=artifacts/gateway.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gateway-validation
+          path: artifacts/gateway.xml
+          retention-days: 14
+  typescript:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        service: [gtm, hubspot]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: servers/${{ matrix.service }}/package-lock.json
+      - run: npm ci --ignore-scripts
+        working-directory: servers/${{ matrix.service }}
+      - run: npm test
+        working-directory: servers/${{ matrix.service }}
+  wordpress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: php -l wordpress/growth-abilities.php
+      - run: php tests/wordpress/test_abilities.php
+  terraform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.8'
+      - run: terraform fmt -check -recursive
+        working-directory: infra/terraform
+      - run: terraform init -backend=false -input=false
+        working-directory: infra/terraform
+      - run: terraform validate
+        working-directory: infra/terraform
+  containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [ga4, google-ads, gtm, hubspot, meta, gateway, site-browser]
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t growth-${{ matrix.service }}:test servers/${{ matrix.service }}

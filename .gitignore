@@ -37,3 +37,5 @@ artifacts/
 playwright-report/
 test-results/
 config/*.local.yaml
+
+!.coveragerc

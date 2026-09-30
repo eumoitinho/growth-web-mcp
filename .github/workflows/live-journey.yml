@@ -1,0 +1,89 @@
+name: Test-environment journey
+on:
+  workflow_dispatch:
+    inputs:
+      journey:
+        description: Journey ID in config/journeys.example.yaml
+        required: true
+        default: google-ads-demo
+      resume_run_id:
+        description: Previous workflow run ID to re-query without resubmitting
+        required: false
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+concurrency:
+  group: live-journey-qa
+  cancel-in-progress: false
+jobs:
+  journey:
+    runs-on: ubuntu-latest
+    environment: qa
+    timeout-minutes: 15
+    env:
+      QA_HUBSPOT_TOKEN: ${{ secrets.QA_HUBSPOT_TOKEN }}
+      QA_TEST_EMAIL: ${{ secrets.QA_TEST_EMAIL }}
+      QA_EXISTING_CONTACT_EMAIL: ${{ secrets.QA_EXISTING_CONTACT_EMAIL }}
+      QA_BROWSER_SETTINGS: ${{ vars.QA_BROWSER_SETTINGS }}
+      QA_COLLECTORS_CONFIG: ${{ vars.QA_COLLECTORS_CONFIG }}
+      QA_JOURNEY_SUITE: ${{ vars.QA_JOURNEY_SUITE }}
+      QA_JOURNEY: ${{ inputs.journey }}
+      QA_RESUME_RUN_ID: ${{ inputs.resume_run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.QA_WIF_PROVIDER }}
+          service_account: ${{ vars.QA_SERVICE_ACCOUNT }}
+      - run: pip install -r requirements-test.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Write explicit test configuration
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import yaml
+          for name, file in [('QA_BROWSER_SETTINGS','browser'),('QA_COLLECTORS_CONFIG','collectors'),('QA_JOURNEY_SUITE','journeys')]:
+              value = os.environ.get(name)
+              if not value:
+                  raise SystemExit(f'Missing required configuration: {name}')
+              parsed = yaml.safe_load(value)
+              if name == 'QA_BROWSER_SETTINGS':
+                  parsed['trace'] = False
+              Path(f'config/{file}.local.yaml').write_text(yaml.safe_dump(parsed))
+          PY
+      - uses: actions/download-artifact@v4
+        if: inputs.resume_run_id != ''
+        with:
+          name: journey-evidence
+          path: artifacts/live
+          run-id: ${{ inputs.resume_run_id }}
+          github-token: ${{ github.token }}
+      - name: Run or resume journey
+        run: |
+          if [ -n "$QA_RESUME_RUN_ID" ]; then
+            python -m growth_qa.pipeline --suite config/journeys.local.yaml --collectors config/collectors.local.yaml --out artifacts/live --resume
+          else
+            python -m growth_qa.pipeline --suite config/journeys.local.yaml --settings config/browser.local.yaml --collectors config/collectors.local.yaml --journey "$QA_JOURNEY" --out artifacts/live --allow-submissions
+          fi
+      # Exit 2 (PENDING) intentionally does not turn into a green success.
+      - name: Publish validation summary
+        if: always()
+        run: |
+          if [ -f artifacts/live/report.md ]; then
+            cat artifacts/live/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: journey-evidence
+          path: |
+            artifacts/live/evidence.json
+            artifacts/live/report.json
+            artifacts/live/report.md
+            artifacts/live/junit.xml
+          retention-days: 7
