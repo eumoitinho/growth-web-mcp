@@ -1,0 +1,29 @@
+name: Bug report / Bug / Error
+description: Report a reproducible problem. English, português or español.
+body:
+  - type: markdown
+    attributes:
+      value: "Do not include credentials or customer data. Report vulnerabilities privately using SECURITY.md."
+  - type: input
+    id: integration
+    attributes:
+      label: Integration and commit/version
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include deployment method and relevant runtime versions.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized logs or screenshots

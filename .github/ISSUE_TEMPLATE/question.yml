@@ -1,0 +1,10 @@
+name: Question / Dúvida / Pregunta
+description: Ask for community help. English, português or español.
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question and context
+      description: Include the integration, setup and documentation you consulted. Remove sensitive data.
+    validations:
+      required: true

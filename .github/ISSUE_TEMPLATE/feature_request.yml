@@ -1,0 +1,15 @@
+name: Feature request / Sugestão / Sugerencia
+description: Propose an improvement. English, português or español.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution and alternatives
+    validations:
+      required: true

@@ -1,127 +1,133 @@
-# growth-web-mcp
+# Growth Web MCP
 
-Projeto open source mantido por [eumoitinho](https://github.com/eumoitinho), sob [Apache-2.0](LICENSE).
-Configurações são exemplos: substitua domínios, IDs e membros IAM pelos seus antes de implantar.
-Veja [CONTRIBUTING.md](CONTRIBUTING.md) e [SECURITY.md](SECURITY.md).
+**English** · [Português (Brasil)](README.pt-BR.md) · [Español](README.es.md)
 
-Servidores MCP no Google Cloud para um agente enxergar **todo o inbound do site**:
-origem (UTM / Google Ads) → site e LPs → eventos GA4 / tags GTM → conversão
-(formulário ou click-to-WhatsApp) → HubSpot (contato, lifecycle, workflows).
+**Connect your AI assistant to the whole marketing funnel.**
 
-Princípio: **não reinventar servidores.** Cada integração é o servidor open source
-oficial/consolidado, empacotado para Cloud Run com o mínimo de código em volta
-(transporte HTTP, autenticação por IAM, política de leitura/escrita).
+Self-hosted Model Context Protocol (MCP) servers for Google Cloud: bring traffic, campaigns, tracking, forms and CRM data into one workflow.
 
-```
-                        ┌──────────────── Google Cloud (Cloud Run, IAM) ────────────────┐
- Agente                 │                                                               │
- (Claude Code,          │  growth-mcp-ga4 ─────── analytics-mcp (Google)  ──► GA4 Admin/Data API
-  ADK, ...)  ──HTTPS──► │  growth-mcp-google-ads ─ google-ads-mcp (Google) ──► Google Ads API
-                        │  growth-mcp-meta ────── servidor próprio (leitura) ──► Meta Marketing API
-  + skills   ID token   │  growth-mcp-gtm ─────── gtm-mcp-core (Stape)    ──► Tag Manager API
-                        │  growth-mcp-hubspot ─── @hubspot/mcp-server     ──► HubSpot API
-                        │  growth-mcp-site-browser  chrome-devtools-mcp   ──► site (headless Chrome)
-                        │                                                               │
-                        │  BigQuery MCP (gerenciado pelo Google) ──► growth_clean (views) ◄── export GA4
-                        └───────────────────────────────────────────────────────────────┘
-```
+[![License: Apache-2.0](https://img.shields.io/github/license/eumoitinho/growth-web-mcp)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/eumoitinho/growth-web-mcp?style=flat&logo=github)](https://github.com/eumoitinho/growth-web-mcp/stargazers)
+[![Issues](https://img.shields.io/github/issues/eumoitinho/growth-web-mcp)](https://github.com/eumoitinho/growth-web-mcp/issues)
 
-## O que é cada peça
+[![Google Analytics 4](https://img.shields.io/badge/Google_Analytics_4-E37400?style=flat-square&logo=googleanalytics&logoColor=white)](servers/ga4)
+[![Google Ads](https://img.shields.io/badge/Google_Ads-4285F4?style=flat-square&logo=googleads&logoColor=white)](servers/google-ads)
+[![Google Tag Manager](https://img.shields.io/badge/Google_Tag_Manager-246FDB?style=flat-square&logo=googletagmanager&logoColor=white)](servers/gtm)
+[![HubSpot](https://img.shields.io/badge/HubSpot-FF7A59?style=flat-square&logo=hubspot&logoColor=white)](servers/hubspot)
+[![Meta Ads](https://img.shields.io/badge/Meta_Ads-0866FF?style=flat-square&logo=meta&logoColor=white)](servers/meta)
+[![BigQuery](https://img.shields.io/badge/BigQuery-669DF6?style=flat-square&logo=googlebigquery&logoColor=white)](bigquery)
+[![WordPress](https://img.shields.io/badge/WordPress-21759B?style=flat-square&logo=wordpress&logoColor=white)](wordpress)
+[![Chrome DevTools](https://img.shields.io/badge/Chrome_DevTools-4285F4?style=flat-square&logo=googlechrome&logoColor=white)](servers/site-browser)
 
-| Serviço | Upstream (pinado) | O que este repo adiciona |
+## Why use it?
+
+- Trace the journey from campaign and landing page to conversion and CRM lifecycle.
+- Audit GA4 events, GTM tags, attribution and HubSpot form routing.
+- Query a consistent BigQuery layer built from versioned YAML contracts.
+- Start with read-only services; enable separate GTM and HubSpot write services when needed.
+
+## Integrations
+
+| Integration | Coverage | Implementation |
 |---|---|---|
-| `ga4` | [googleanalytics/google-analytics-mcp](https://github.com/googleanalytics/google-analytics-mcp) `analytics-mcp==0.7.0` | Transporte Streamable HTTP (upstream é só stdio) + 5 tools Admin read-only: `list_data_streams`, `get_enhanced_measurement_settings`, `list_key_events`, `list_channel_groups`, `get_data_retention_settings` |
-| `google-ads` | [googleads/google-ads-mcp](https://github.com/googleads/google-ads-mcp) `google-ads-mcp==0.0.4` | Modo HTTP + ADC com IAM do Cloud Run (upstream oferece stdio ou OAuth proxy; este continua disponível com `ADS_MCP_MODE=oauth`) |
-| `gtm` | [stape-io/google-tag-manager-mcp-server](https://github.com/stape-io/google-tag-manager-mcp-server) `google-tag-manager-mcp-core@2.1.1` | ADC com escopo mínimo + política por `action` (read / write / delete / publish) |
-| `hubspot` | [@hubspot/mcp-server](https://www.npmjs.com/package/@hubspot/mcp-server) `0.4.0` (oficial HubSpot) | Filtro read/write + tools de Forms, Submissões e Pipelines (não existem no upstream e são o coração do problema de funil) |
-| `meta` | Graph Marketing API v26 (sem servidor open source oficial auto-hospedável) | Servidor próprio mínimo, só leitura, token de system user: insights, UTMs/destinos dos anúncios, pixel por evento/host/origem, Lead Ads. Escrita via [MCP oficial do Meta](https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-overview) (`mcp.facebook.com/ads`) |
-| `site-browser` | [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) `1.10.1` + [supergateway](https://github.com/supercorp-ai/supergateway) `4.0.0` | Imagem com Chrome headless; uma sessão MCP = um Chrome isolado |
-| `bigquery` | [BigQuery MCP gerenciado](https://cloud.google.com/bigquery/docs/use-bigquery-mcp) (`https://bigquery.googleapis.com/mcp`) | Nada para hospedar. Este repo cria a **superfície limpa** (`bigquery/`) que o agente consulta |
-| `gateway` | [FastMCP](https://github.com/PrefectHQ/fastmcp) `4.0.10` (proxy + OAuth proxy do Google) | URL pública única para o **conector do claude.ai**: login Google restrito aos domínios configurados, repassa as chamadas aos servidores de leitura (privados) e ao WordPress. Ver [`docs/claude-web-connector.md`](docs/claude-web-connector.md) |
+| Google Analytics 4 | Reports, properties and event configuration | Google Analytics MCP + additional Admin tools |
+| Google Ads | Campaign and conversion queries | Google Ads MCP wrapper |
+| Google Tag Manager | Containers, tags and triggers; optional writes | Stape core + action policy |
+| HubSpot | CRM, forms, submissions and pipelines; optional writes | HubSpot MCP + additional tools |
+| Meta Ads | Insights, ad destinations, pixels and Lead Ads metadata | Read-only Marketing API server |
+| BigQuery | Clean events, sessions, conversions and funnel views | Google-managed MCP + SQL templates |
+| WordPress | Plugins, tracking snippets, forms and pages | MCP Adapter + read-only abilities |
+| Chrome DevTools | Browser inspection, network and performance | Headless browser via MCP |
 
-HubSpot também oferece o servidor remoto oficial (`https://mcp.hubspot.com`, OAuth por
-usuário) — ótimo para pessoas no Claude/ChatGPT. O serviço deste repo existe para o
-agente ter uma identidade estável, auditável e com escopo controlado.
+## How it fits together
 
-## A "superfície limpa"
+The private Cloud Run services use Google IAM. An optional OAuth gateway exposes the read services through a single connector URL. WordPress is installed separately; BigQuery uses Google’s managed MCP endpoint.
 
-O GA4 bruto é sujo (eventos duplicados, nomes legados, LPs e subdomínios misturados).
-Em vez de o agente reaprender isso a cada pergunta, a limpeza é **contrato versionado**:
-
-- [`config/site-scope.yaml`](config/site-scope.yaml) — hostname → `website | blog | landing_pages | product | staging | external`.
-- [`config/event-taxonomy.yaml`](config/event-taxonomy.yaml) — `event_name` → canônico / alias / auto / review / noise.
-- [`config/hubspot-funnel.yaml`](config/hubspot-funnel.yaml) — para onde cada form/CTW *deveria* levar o contato.
-
-`scripts/bq-apply.sh` transforma os YAMLs em views sobre o export GA4 →
-`growth_clean.stg_events`, `fct_sessions`, `fct_conversions`, `rpt_*`
-(detalhes em [`bigquery/README.md`](bigquery/README.md)). O agente analisa ali;
-quando encontra algo novo, propõe PR nos YAMLs. Os mesmos contratos servem de
-especificação de tagueamento para o site Next.js.
-
-## O agente
-
-- [`CLAUDE.md`](CLAUDE.md) — papel, ferramentas, regras.
-- [`.claude/skills/`](.claude/skills) — playbooks: `inbound-funnel-audit`,
-  `meta-ads-tracking`, `ga4-event-hygiene`, `gtm-container-audit`, `hubspot-form-routing`,
-  `site-tagging-qa`, `site-performance`.
-- [`.mcp.json`](.mcp.json) — conexão com os servidores (Claude Code). A autenticação
-  é feita por [`scripts/mcp-auth-header.sh`](scripts/mcp-auth-header.sh) com o seu
-  `gcloud`.
-
-Qualquer cliente MCP com Streamable HTTP funciona (Gemini CLI, ADK, etc.) — basta
-enviar um ID token do Google (`Authorization: Bearer`) de alguém com `roles/run.invoker`.
-
-## Leitura por padrão, escrita opcional
-
-Tudo sobe **somente leitura**. Escrita (GTM e HubSpot) é um segundo conjunto de
-serviços, com outras service accounts, outros tokens e outra lista de quem pode usar.
-Escrita no Meta usa o MCP oficial hospedado pelo Meta (OAuth por pessoa).
-Ver [`docs/write-access.md`](docs/write-access.md).
+```mermaid
+flowchart LR
+  A["MCP client"] -->|IAM| B["Private Cloud Run MCP servers"]
+  A -->|OAuth| G["Optional gateway"]
+  G --> B
+  B --> C["GA4 · Ads · GTM · HubSpot · Meta · Chrome"]
+  G --> W["WordPress MCP Adapter"]
+  A --> Q["Google-managed BigQuery MCP"]
+  Q --> V["Analytics views from YAML contracts"]
+```
 
 ## Quickstart
 
-Pré-requisitos: projeto GCP, `gcloud`, `terraform >= 1.6`, export GA4 → BigQuery ativo.
+For cloud deployment: a Google Cloud project with billing enabled, authenticated `gcloud` and `bq`, Terraform ≥ 1.6, Python ≥ 3.11, and access to the integrations you configure. The full bootstrap requests HubSpot, Google Ads and Meta credentials. GA4 BigQuery export is required for the analytics views. Docker is needed only for local containers; Node.js ≥ 22 for TypeScript development.
 
 ```bash
-cp infra/terraform/terraform.tfvars.example infra/terraform/terraform.tfvars   # edite
-PROJECT_ID=<projeto> scripts/bootstrap.sh          # APIs, imagens, Cloud Run, IAM, BigQuery MCP
-# conceda acesso às service accounts no GA4 / Ads / GTM / HubSpot:
-#   docs/access-setup.md
-scripts/write-env.sh > .env && set -a && source .env && set +a
-PROJECT_ID=<projeto> scripts/bq-apply.sh           # views da superfície limpa
-claude                                             # abre o agente com .mcp.json + skills
+git clone https://github.com/eumoitinho/growth-web-mcp.git
+cd growth-web-mcp
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install PyYAML
+cp infra/terraform/terraform.tfvars.example infra/terraform/terraform.tfvars
 ```
 
-Testar um servidor isolado:
+Edit `infra/terraform/terraform.tfvars` and `config/*.yaml`: set your project, region, domains, account IDs and IAM members. Keep the region consistent. All supplied values are examples. The bootstrap creates billable cloud resources and applies Terraform automatically.
 
 ```bash
+export PROJECT_ID="your-gcp-project"
+export REGION="southamerica-east1"
+gcloud auth login
+gcloud config set project "$PROJECT_ID"
+scripts/bootstrap.sh
+```
+
+After deployment, grant the service accounts access to your products using the [access guide](docs/access-setup.md) (Portuguese). Then:
+
+```bash
+scripts/write-env.sh > .env
+set -a; source .env; set +a
+scripts/bq-apply.sh
 python scripts/smoke_test.py "$GROWTH_MCP_GA4_URL" --id-token
-python scripts/smoke_test.py "$GROWTH_MCP_GA4_URL" --id-token --call get_account_summaries '{}'
 ```
 
-Rodar localmente (sem Cloud Run): cada `servers/<nome>` tem Dockerfile; ex.
+WordPress and the OAuth gateway need separate configuration: see the guides below. Set `WP_MCP_URL` and `WP_MCP_BASIC_AUTH` locally if using WordPress; otherwise remove its entry from your local `.mcp.json`. Your MCP client must support Streamable HTTP and the service’s authentication. The supplied configuration targets Claude Code.
+
+### Run GA4 locally
+
+Configure Application Default Credentials with access to your GA4 property before starting the container. Store credentials outside this repository.
 
 ```bash
-docker build -t ga4 servers/ga4
-docker run -p 8080:8080 -e GOOGLE_APPLICATION_CREDENTIALS=/adc.json \
-  -v ~/.config/gcloud/application_default_credentials.json:/adc.json:ro ga4
-python scripts/smoke_test.py http://localhost:8080/mcp
+gcloud auth application-default login
+docker build -t growth-ga4 servers/ga4
+docker run --rm -p 8080:8080 \
+  -e GOOGLE_APPLICATION_CREDENTIALS=/adc.json \
+  -v "$HOME/.config/gcloud/application_default_credentials.json:/adc.json:ro" \
+  growth-ga4
 ```
 
-## Estrutura
+## Documentation
 
-```
-servers/        um diretório por servidor MCP (Dockerfile + wrapper mínimo)
-infra/terraform Cloud Run, service accounts, secrets, Artifact Registry, dataset
-bigquery/sql    templates das views (renderizados por scripts/render_bq.py)
-config/         contratos: escopo de site, taxonomia de eventos, funil HubSpot
-.claude/skills  playbooks do agente
-scripts/        bootstrap, auth header, smoke test, render/apply BigQuery
-docs/           acesso, escrita, conector do claude.ai, roadmap
-```
+The entry README is available in three languages. Detailed operational guides and agent playbooks are currently in Portuguese; translation contributions are welcome.
 
-## Próximos passos
+| Guide | Purpose |
+|---|---|
+| [Architecture and upstreams](docs/architecture.pt-BR.md) | Services, pinned dependencies and data contracts |
+| [Access setup](docs/access-setup.md) | Grant product and IAM permissions |
+| [Write access](docs/write-access.md) | Separate read/write identities and tools |
+| [OAuth gateway](docs/claude-web-connector.md) | Connect through Google OAuth |
+| [WordPress](wordpress/README.md) | Install read-only abilities |
+| [BigQuery](bigquery/README.md) | Render and apply analytics views |
+| [Agent playbooks](.claude/skills) | Audit workflows for the agent |
+| [Roadmap](docs/roadmap.md) | Completed work and future directions |
 
-Ver [`docs/roadmap.md`](docs/roadmap.md): HubSpot → BigQuery para reconciliar lead a
-lead, Search Console, MCP do WordPress (e depois do repo Next.js), e um agente
-agendado (ADK/Cloud Run Job) que roda a higiene semanalmente.
+## Support and contributions
+
+Use [GitHub Issues](https://github.com/eumoitinho/growth-web-mcp/issues/new/choose) for reproducible bugs, feature requests and usage questions. Support is community-based, with no guaranteed response time. English, Portuguese and Spanish are welcome.
+
+Read [SUPPORT.md](SUPPORT.md), [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md). Report vulnerabilities privately following [SECURITY.md](SECURITY.md).
+
+## Status and license
+
+Early-stage project: validate the integrations in your own environment before production use. Maintained by [eumoitinho](https://github.com/eumoitinho), under [Apache-2.0](LICENSE). Third-party services and dependencies retain their own terms and licenses. This is an independent project, not an endorsement by the platforms above.
+
+## Star history
+
+If this project helps you, consider starring it. The chart is provided by Star History and may take time to reflect new stars.
+
+[![Star history](https://api.star-history.com/svg?repos=eumoitinho/growth-web-mcp&type=Date)](https://www.star-history.com/#eumoitinho/growth-web-mcp&Date)
