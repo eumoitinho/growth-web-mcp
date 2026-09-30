@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "journeys"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "journeys": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "channel",
+          "expectations"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "channel": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "browser": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "steps"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "query": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "referrer": {
+                "type": "string"
+              },
+              "steps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "action",
+                    "selector"
+                  ],
+                  "properties": {
+                    "action": {
+                      "enum": [
+                        "fill",
+                        "click",
+                        "check",
+                        "wait_visible"
+                      ]
+                    },
+                    "selector": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "settle_ms": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 30000
+              }
+            }
+          },
+          "expectations": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "source",
+                "event",
+                "min_count",
+                "max_count",
+                "deadline_seconds"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "event": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "min_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "max_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "deadline_seconds": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "applicable": {
+                  "type": "boolean"
+                },
+                "fields": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean",
+                      "null"
+                    ]
+                  }
+                },
+                "required_fields": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "uniqueItems": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
