@@ -209,7 +209,7 @@ class AuditLog(Middleware):
         entry = {"event": "tool_call", "email": _current_email(), "tool": context.message.name}
         try:
             result = await call_next(context)
-            entry["ok"] = True
+            entry["ok"] = not bool(getattr(result, "isError", False))
             return result
         except Exception as exc:
             entry.update(ok=False, error=type(exc).__name__)
