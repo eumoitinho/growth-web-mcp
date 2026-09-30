@@ -55,6 +55,7 @@ async def test_browser_sessions_isolated_and_expired(monkeypatch):
 async def test_audit_marks_mcp_error_as_failure(monkeypatch, capsys):
     monkeypatch.setattr(server, '_current_email', lambda: 'test')
     context = SimpleNamespace(message=SimpleNamespace(name='probe'))
-    result = SimpleNamespace(isError=True)
+    from fastmcp.tools.base import ToolResult
+    result = ToolResult(content=[], is_error=True)
     assert await server.AuditLog().on_call_tool(context, AsyncMock(return_value=result)) is result
     assert json.loads(capsys.readouterr().out)['ok'] is False

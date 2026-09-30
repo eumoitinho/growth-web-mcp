@@ -32,3 +32,19 @@ def test_bigquery_identifier_and_field_allowlist():
     with pytest.raises(ValueError): bigquery_sql('p.d.t`; DROP TABLE foo')
     assert '@run_id' in bigquery_sql('project.dataset.view')
     assert safe_fields({'email':'x', 'utm_source':'google', 'cookies':{}, 'has_gclid':True}) == {'utm_source':'google','has_gclid':True}
+
+
+def test_bigquery_parameterized_collection(monkeypatch):
+    from datetime import datetime,timezone
+    from unittest.mock import Mock
+    from google.cloud import bigquery
+    from growth_qa.collect import collect_bigquery
+    client=Mock()
+    client.query.return_value.result.return_value=[{'event_ts':datetime(2026,1,1,0,0,1,tzinfo=timezone.utc),'event_name':'generate_lead','test_run_id':'run-1','submission_id':'sub-1','utm_source':'google'}]
+    monkeypatch.setattr(bigquery,'Client',lambda **kw:client)
+    rows=collect_bigquery(evidence(),{'project':'test','table':'test.clean.events'})
+    assert rows[0]['source']=='ga4'
+    query=client.query.call_args
+    assert query.kwargs['job_config'].maximum_bytes_billed==100_000_000
+    assert query.kwargs['job_config'].query_parameters[0].value=='run-1'
+    assert 'run-1' not in query.args[0]

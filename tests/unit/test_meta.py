@@ -41,3 +41,28 @@ async def test_timeout_propagates(monkeypatch):
     client_factory(monkeypatch, handler)
     with pytest.raises(httpx.ReadTimeout):
         await server._get('items')
+
+
+async def test_pagination_cannot_forward_credentials_to_another_host(monkeypatch):
+    client_factory(monkeypatch,lambda r:httpx.Response(200,json={'data':[],'paging':{'next':'https://example.invalid/steal'}}))
+    with pytest.raises(server.MetaError,match='Unsafe'):
+        await server._get('items',max_pages=2)
+
+
+async def test_destinations_and_campaign_attribution(monkeypatch):
+    from unittest.mock import AsyncMock
+    monkeypatch.setattr(server,'_get',AsyncMock(return_value={'data':[{'id':'ad','creative':{'link_url':'https://example.com/?utm_source=facebook','url_tags':'utm_medium=paid_social&utm_campaign=qa'}}], 'truncated':False}))
+    result=await server.list_ad_destinations('123')
+    destination=result['ads'][0]['destinations'][0]
+    assert destination['missing_utm']==[]
+    assert destination['utm']['utm_campaign']=='qa'
+    assert destination['host']=='example.com'
+
+
+async def test_lead_forms_never_return_page_token(monkeypatch):
+    from unittest.mock import AsyncMock
+    mock=AsyncMock(side_effect=[{'access_token':'private-token'},{'data':[{'id':'form','leads_count':2}],'truncated':False}])
+    monkeypatch.setattr(server,'_get',mock)
+    result=await server.list_leadgen_forms('page')
+    assert 'private-token' not in str(result)
+    assert mock.call_args.kwargs['token']=='private-token'

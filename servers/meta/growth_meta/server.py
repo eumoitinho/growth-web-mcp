@@ -19,7 +19,7 @@ Write access is delegated to Meta's official MCP (see docs/write-access.md).
 
 import os
 from typing import Any, Literal
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse, parse_qsl, urlencode
 
 import httpx
 from mcp.server.fastmcp import FastMCP
@@ -74,6 +74,11 @@ async def _get(path: str, params: dict[str, Any] | None = None, token: str | Non
                 return body
             rows.extend(body["data"])
             url = body.get("paging", {}).get("next")
+            if url:
+                next_url = urlparse(url)
+                if next_url.scheme != 'https' or next_url.hostname != 'graph.facebook.com' or next_url.username or next_url.password:
+                    raise MetaError('Unsafe Graph pagination URL')
+                url = next_url._replace(query=urlencode([(k, v) for k, v in parse_qsl(next_url.query) if k != 'access_token'])).geturl()
             query = {}  # `next` already carries every parameter
             if not url:
                 break

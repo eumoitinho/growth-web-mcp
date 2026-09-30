@@ -57,11 +57,11 @@ services:
     url: https://bigquery.googleapis.com/mcp
     headers: {Authorization: '${QA_GOOGLE_ACCESS_HEADER}'}
     require_unauthenticated_denial: true
-    required_tools: [execute_sql]
+    required_tools: [execute_sql_readonly]
     calls:
-      - tool: execute_sql
+      - tool: execute_sql_readonly
         read_only: true
-        arguments: {project_id: '${QA_GCP_PROJECT}', query: 'SELECT 1 AS probe'}
+        arguments: {projectId: '${QA_GCP_PROJECT}', query: 'SELECT 1 AS probe'}
   - name: wordpress
     url: ${WP_MCP_URL}
     headers: {Authorization: '${QA_WP_AUTH_HEADER}'}
