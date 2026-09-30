@@ -1,0 +1,97 @@
+# Roteamento ESPERADO de cada porta de entrada do inbound para o HubSpot.
+#
+# O problema relatado ("os formulários caem no funil errado") só é auditável se
+# o esperado estiver escrito. A skill hubspot-form-routing compara isto com a
+# realidade: definição do form, workflows que ele dispara, e contatos recentes.
+#
+# Preencha os TODO com o time de RevOps. Cada entrada = um caminho de conversão.
+
+lifecycle_order: [subscriber, lead, marketingqualifiedlead, salesqualifiedlead, opportunity, customer]
+
+# Propriedades lidas em todo contato para reconstruir a jornada.
+attribution_properties:
+  - createdate
+  - lifecyclestage
+  - hs_lead_status
+  - hubspot_owner_id
+  - hs_analytics_source             # fonte original (ORGANIC_SEARCH, PAID_SEARCH, OFFLINE, ...)
+  - hs_analytics_source_data_1
+  - hs_analytics_source_data_2
+  - hs_latest_source
+  - hs_latest_source_data_1
+  - hs_analytics_first_url
+  - hs_analytics_first_referrer
+  - first_conversion_event_name
+  - recent_conversion_event_name
+  - num_conversion_events
+  - utm_source                      # TODO: confirmar nomes das propriedades customizadas
+  - utm_medium
+  - utm_campaign
+  - utm_content
+  - utm_term
+  - gclid
+
+entry_points:
+  - id: demo-site
+    kind: form                      # form | ctw | chat | signup
+    description: Pedido de demonstração no site institucional
+    where: https://www.example.com/demonstracao   # TODO
+    hubspot_form_id: ""             # TODO: GUID
+    submission: forms_api_v3        # embed | forms_api_v3 | captured (non-HubSpot form)
+    ga4_event: generate_lead
+    ga4_params: {lead_type: demo}
+    required_hidden_fields: [utm_source, utm_medium, utm_campaign, gclid]
+    expected:
+      lifecyclestage: marketingqualifiedlead    # TODO
+      hs_lead_status: NEW                       # TODO
+      owner_team: vendas                        # TODO
+      workflows: []                             # TODO: IDs dos workflows que devem disparar
+
+  - id: contato-site
+    kind: form
+    description: Formulário de contato geral
+    where: https://www.example.com/contato        # TODO
+    hubspot_form_id: ""
+    submission: forms_api_v3
+    ga4_event: generate_lead
+    ga4_params: {lead_type: contato}
+    required_hidden_fields: [utm_source, utm_medium, utm_campaign]
+    expected:
+      lifecyclestage: lead
+      hs_lead_status: NEW
+
+  - id: material-rico
+    kind: form
+    description: Download de e-book / material em LP
+    where: landing_pages
+    hubspot_form_id: ""
+    submission: embed
+    ga4_event: generate_lead
+    ga4_params: {lead_type: conteudo}
+    expected:
+      lifecyclestage: subscriber                # não deveria virar MQL sozinho — TODO confirmar
+      hs_lead_status: ""
+
+  - id: ctw-site
+    kind: ctw
+    description: Botões de WhatsApp do site (conversa entra pela plataforma de atendimento e o contato é criado/atualizado no HubSpot pela integração)
+    where: website
+    ga4_event: ctw_click
+    # wa.me perde UTMs. Para atribuir, o link precisa carregar um código na
+    # mensagem pré-preenchida (ex.: "[ref:LP-DEMO-GADS]") que a integração grava
+    # no contato. Sem isso, estes contatos aparecem como OFFLINE/Direct no HubSpot.
+    attribution_carrier: prefilled_message_ref  # TODO: confirmar como é feito hoje
+    expected:
+      lifecyclestage: lead
+      hs_analytics_source: OFFLINE              # esperado hoje; alvo: fonte real via ref
+
+  - id: meta-lead-ads
+    kind: lead_ads                  # formulário instantâneo do Meta: o lead não passa pelo site
+    description: Formulários de Lead Ads (Facebook/Instagram) sincronizados com o HubSpot
+    where: meta
+    meta_form_ids: []               # TODO (list_leadgen_forms)
+    hubspot_sync: ""                # TODO: integração nativa HubSpot <> Meta Lead Ads, Zapier, outra
+    ga4_event: null                 # não há evento no site; compare leads_count x contatos
+    expected:
+      lifecyclestage: lead          # TODO
+      hs_analytics_source: PAID_SOCIAL

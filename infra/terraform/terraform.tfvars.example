@@ -1,0 +1,24 @@
+project_id = "your-gcp-project"          # TODO: projeto GCP real
+region     = "southamerica-east1"
+
+invokers = [
+  "group:growth@example.com",             # TODO: grupo que pode usar os MCPs de leitura
+]
+
+# Escrita: desligada por padrão. Ligue só depois de validar a leitura.
+enable_write            = false
+write_invokers          = ["user:maintainer@example.com"]
+gtm_write_allow_delete  = false
+gtm_write_allow_publish = false
+hubspot_write_tools     = ["hubspot-batch-update-objects", "hubspot-create-property", "hubspot-update-property"]
+
+ga4_export_project           = "your-ga4-project"      # projeto do export GA4 (vazio = project_id)
+ga4_export_dataset           = "analytics_000000000"  # TODO: dataset do export GA4 -> BigQuery
+clean_dataset                = "growth_clean"
+bigquery_location            = "US"                   # igual ao dataset do export
+google_ads_login_customer_id = ""                     # MCC, só dígitos, se houver
+
+# Conector do claude.ai (docs/claude-web-connector.md)
+enable_gateway          = false
+gateway_oauth_client_id = ""                 # OAuth client "Web application", tela de consentimento Internal
+gateway_allowed_domains = ["example.com"]

@@ -1,0 +1,72 @@
+# Escopo do "website" — o que é site institucional, o que é LP, produto, ruído.
+#
+# É a peça que resolve "muitas LPs e projetos em subdomínios sujam a visão":
+# toda análise do agente (e as views do BigQuery) classifica cada hit por
+# hostname usando esta lista. A primeira regra que casar vence.
+#
+# Os valores marcados TODO precisam ser confirmados. O primeiro trabalho do
+# agente é rodar a skill ga4-event-hygiene, listar os hostnames reais que
+# aparecem no GA4 e propor (via PR) a versão correta deste arquivo.
+
+ga4:
+  properties:
+    - id: "000000000"                 # TODO: ID numérico da propriedade GA4 do site
+      name: "Site institucional"
+      export_project: your-ga4-project       # projeto onde o export GA4 -> BigQuery já existe
+      export_dataset: analytics_000000000   # TODO: dataset do export GA4 -> BigQuery
+      primary: true
+
+gtm:
+  containers:
+    - public_id: GTM-XXXXXXX          # TODO
+      account_id: ""                  # TODO (numérico, aparece na URL do GTM)
+      container_id: ""                # TODO
+      role: website
+
+google_ads:
+  customer_ids: []                    # TODO: contas (só dígitos)
+
+meta:
+  business_id: ""                     # TODO (Business Manager ID)
+  ad_account_ids: []                  # TODO: ["act_123..."]
+  pixel_ids: []                       # TODO: pixel/dataset do site
+  page_ids: []                        # TODO: Pages com formulários de Lead Ads
+
+hubspot:
+  portal_id: ""                       # TODO (Hub ID)
+
+website:
+  canonical_origin: https://www.example.com   # TODO: confirmar
+  platform: wordpress                        # muda para nextjs após a migração
+  # URLs que representam as jornadas de inbound (o agente audita estas primeiro)
+  key_urls:
+    - https://www.example.com/              # TODO
+    # - https://www.example.com/demonstracao
+    # - https://www.example.com/contato
+
+# scopes:
+#   website        site institucional (o que queremos enxergar limpo)
+#   blog           conteúdo / SEO
+#   landing_pages  LPs de campanha (builders, subdomínios de LP)
+#   product        app / login / plataforma (não é inbound de marketing)
+#   staging        homologação, preview, localhost — sempre excluir
+#   external       domínios de terceiros (checkout, tradutores, cache do Google)
+hostnames:
+  - pattern: '^(localhost|127\.0\.0\.1)(:\d+)?$'
+    scope: staging
+  - pattern: '(^|\.)(staging|stage|hml|homolog|dev|preview)\.'
+    scope: staging
+  - pattern: '\.(vercel\.app|netlify\.app|wpengine\.com|wpenginepowered\.com)$'
+    scope: staging
+  - pattern: '^(www\.)?example\.com$'            # TODO: confirmar domínio
+    scope: website
+  - pattern: '^blog\.example\.com$'              # TODO
+    scope: blog
+  - pattern: '^(lp|lps|materiais|conteudo|eventos)\.example\.com$'   # TODO
+    scope: landing_pages
+  - pattern: '^(app|painel|login|chat|api)\.example\.com$'           # TODO
+    scope: product
+  - pattern: '(translate\.goog|googleusercontent\.com|webcache\.)'
+    scope: external
+
+default_scope: unknown

@@ -1,0 +1,20 @@
+[project]
+name = "growth-meta-mcp"
+version = "0.1.0"
+description = "Read-only Meta Ads MCP server (Graph Marketing API, system user token) for Cloud Run"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = [
+    "mcp==1.30.0",
+    "httpx>=0.28",
+]
+
+[project.scripts]
+growth-meta-mcp = "growth_meta.server:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["growth_meta"]

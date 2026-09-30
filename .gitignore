@@ -1,0 +1,30 @@
+node_modules/
+dist/
+__pycache__/
+*.egg-info/
+.venv/
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+.env
+bigquery/build/
+
+# estado local dos hooks de remediação
+.claude/lote-ativo
+.claude/lote-sync-*
+.DS_Store
+
+# Credentials and local operational data
+.env.*
+!.env.example
+*.tfvars
+!*.tfvars.example
+*.pem
+*.key
+*credentials*.json
+CLAUDE.local.md
+.claude/settings.local.json
+.playwright-mcp/
+docs/remediation/changes/

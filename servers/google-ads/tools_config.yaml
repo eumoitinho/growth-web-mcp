@@ -1,0 +1,11 @@
+# Tools exposed by google-ads-mcp (see upstream ads_mcp/config.py).
+# Every upstream namespace is read-only today; keep this file explicit so a
+# future upstream release that adds mutate tools does not enable them silently:
+# a namespace missing from this list is disabled.
+#
+# prefix "" drops upstream's namespace prefix (search_search -> search). MCP
+# clients already namespace tools per server (e.g. mcp__google-ads__search).
+namespaces:
+  customers: {enabled: true, prefix: ""}   # list_accessible_customers
+  search: {enabled: true, prefix: ""}      # search (GAQL)
+  metadata: {enabled: true, prefix: ""}    # get_resource_metadata

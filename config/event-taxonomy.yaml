@@ -1,0 +1,121 @@
+# Taxonomia de eventos: o contrato entre site/GTM, GA4 e o agente.
+#
+# Todo event_name que chega ao GA4 cai em um status:
+#   canonical  evento de negócio oficial (nome final)
+#   alias      nome legado/duplicado que representa um canônico -> contado como ele
+#   auto       coletado automaticamente pelo GA4; mantido, mas não é evento de negócio
+#   review     ambíguo (ex.: enhanced measurement concorrendo com GTM); fora do funil
+#   noise      lixo: eventos internos do GTM, testes, debug -> ignorado
+#   unknown    (implícito) não está aqui -> aparece em rpt_event_hygiene para triagem
+#
+# Os aliases/noise abaixo são PONTO DE PARTIDA. A skill ga4-event-hygiene compara
+# com os eventos reais e propõe ajustes via PR. Mudou aqui => rode scripts/bq-apply.sh.
+#
+# Na migração para Next.js, implemente SOMENTE os canônicos (dataLayer.push com
+# os required_params) — os aliases morrem junto com o WordPress.
+
+canonical:
+  page_view:
+    stage: visit
+  cta_click:
+    stage: engagement
+    description: Clique em CTA principal (demo, contato, planos)
+    required_params: [cta_text, cta_location, link_url]
+  form_start:
+    stage: engagement
+    description: Primeira interação com um formulário de conversão
+    required_params: [form_id, form_name]
+  generate_lead:
+    stage: lead
+    conversion: true
+    description: Formulário enviado COM sucesso para o HubSpot (disparar no callback de sucesso, não no submit)
+    required_params: [form_id, form_name, lead_type, hubspot_form_id]
+  ctw_click:
+    stage: lead_intent
+    conversion: true
+    description: Click-to-WhatsApp (wa.me, api.whatsapp.com, widget)
+    required_params: [link_url, cta_location, whatsapp_number]
+  sign_up:
+    stage: lead
+    conversion: true
+    description: Cadastro/trial no produto iniciado a partir do site
+  file_download:
+    stage: engagement
+  video_start:
+    stage: engagement
+  video_complete:
+    stage: engagement
+  scroll:
+    stage: engagement
+
+auto:
+  - session_start
+  - first_visit
+  - user_engagement
+  - click                 # enhanced measurement: clique de saída
+  - view_search_results
+  - video_progress
+
+review:
+  form_submit: >-
+    Enhanced measurement dispara em qualquer <form> (inclusive busca e newsletter)
+    e antes da confirmação do HubSpot. Não usar como conversão; conferir
+    get_enhanced_measurement_settings e desligar "form interactions" se o GTM já
+    envia form_start/generate_lead.
+
+aliases:
+  generate_lead:
+    - lead
+    - form_submission
+    - form_sent
+    - submit_form
+    - formulario_enviado
+    - envio_formulario
+    - hubspot_form_submit
+    - hs_form_submit
+    - conversion
+  ctw_click:
+    - whatsapp_click
+    - click_whatsapp
+    - clique_whatsapp
+    - wpp_click
+    - whatsapp
+    - botao_whatsapp
+  cta_click:
+    - cta
+    - click_cta
+    - clique_cta
+    - button_click
+  sign_up:
+    - signup
+    - cadastro
+    - trial_start
+
+noise:
+  - gtm.js
+  - gtm.dom
+  - gtm.load
+  - gtm.click
+  - gtm.linkClick
+  - gtm.formSubmit
+  - gtm.historyChange
+  - gtm.scrollDepth
+  - gtm.timer
+  - test
+  - teste
+  - test_event
+  - debug
+
+# Evento equivalente em outras plataformas, para checar consistência e
+# deduplicação (pixel do navegador x Conversions API, conversão do Google Ads).
+# Não entra nas views do BigQuery; é lido pelas skills.
+platform_events:
+  generate_lead:
+    meta_pixel: Lead
+    google_ads: ""   # TODO: nome da ação de conversão primária de lead
+  ctw_click:
+    meta_pixel: Contact
+  sign_up:
+    meta_pixel: CompleteRegistration
+  page_view:
+    meta_pixel: PageView

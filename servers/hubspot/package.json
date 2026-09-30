@@ -1,0 +1,24 @@
+{
+  "name": "growth-hubspot-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Read-only HubSpot MCP server (official @hubspot/mcp-server tools + forms/pipelines) over Streamable HTTP for Cloud Run",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@hubspot/mcp-server": "0.4.0",
+    "@modelcontextprotocol/sdk": "1.31.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.4",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

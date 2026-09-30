@@ -1,0 +1,26 @@
+[project]
+name = "growth-mcp-gateway"
+version = "0.1.0"
+description = "Public OAuth (Google) gateway that exposes the private read MCP servers to claude.ai connectors"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = [
+    "fastmcp==4.0.10",
+    "py-key-value-aio[firestore]==0.4.6",
+    "google-auth>=2.40",
+    "requests>=2.32",
+    "cryptography>=44",
+]
+
+[project.scripts]
+growth-mcp-gateway = "growth_gateway.server:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["growth_gateway"]
+
+[tool.setuptools.package-data]
+growth_gateway = ["instructions.md"]

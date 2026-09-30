@@ -1,0 +1,46 @@
+{
+  "mcpServers": {
+    "ga4": {
+      "type": "http",
+      "url": "${GROWTH_MCP_GA4_URL}",
+      "headersHelper": "scripts/mcp-auth-header.sh"
+    },
+    "google-ads": {
+      "type": "http",
+      "url": "${GROWTH_MCP_GOOGLE_ADS_URL}",
+      "headersHelper": "scripts/mcp-auth-header.sh"
+    },
+    "meta": {
+      "type": "http",
+      "url": "${GROWTH_MCP_META_URL}",
+      "headersHelper": "scripts/mcp-auth-header.sh"
+    },
+    "gtm": {
+      "type": "http",
+      "url": "${GROWTH_MCP_GTM_URL}",
+      "headersHelper": "scripts/mcp-auth-header.sh"
+    },
+    "hubspot": {
+      "type": "http",
+      "url": "${GROWTH_MCP_HUBSPOT_URL}",
+      "headersHelper": "scripts/mcp-auth-header.sh"
+    },
+    "site-browser": {
+      "type": "http",
+      "url": "${GROWTH_MCP_SITE_BROWSER_URL}",
+      "headersHelper": "scripts/mcp-auth-header.sh"
+    },
+    "bigquery": {
+      "type": "http",
+      "url": "https://bigquery.googleapis.com/mcp",
+      "headersHelper": "scripts/mcp-auth-header.sh"
+    },
+    "wordpress": {
+      "type": "http",
+      "url": "${WP_MCP_URL}",
+      "headers": {
+        "Authorization": "Basic ${WP_MCP_BASIC_AUTH}"
+      }
+    }
+  }
+}

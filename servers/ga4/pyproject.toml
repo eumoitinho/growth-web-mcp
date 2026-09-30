@@ -1,0 +1,24 @@
+[project]
+name = "growth-ga4-mcp"
+version = "0.1.0"
+description = "Streamable HTTP wrapper around the official Google Analytics MCP server (analytics-mcp)"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = [
+    # Official server: https://github.com/googleanalytics/google-analytics-mcp
+    # Pinned on purpose; bump deliberately and re-run scripts/smoke_test.py.
+    "analytics-mcp==0.7.0",
+    # Versions resolved and smoke-tested together with analytics-mcp 0.7.0.
+    "mcp==1.30.0",
+    "uvicorn>=0.30",
+]
+
+[project.scripts]
+growth-ga4-mcp = "growth_ga4.server:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["growth_ga4"]

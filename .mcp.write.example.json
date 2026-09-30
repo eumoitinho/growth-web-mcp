@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "gtm-write": {
+      "type": "http",
+      "url": "${GROWTH_MCP_GTM_WRITE_URL}",
+      "headersHelper": "scripts/mcp-auth-header.sh"
+    },
+    "hubspot-write": {
+      "type": "http",
+      "url": "${GROWTH_MCP_HUBSPOT_WRITE_URL}",
+      "headersHelper": "scripts/mcp-auth-header.sh"
+    },
+    "meta-ads-official": {
+      "type": "http",
+      "url": "https://mcp.facebook.com/ads"
+    }
+  }
+}
