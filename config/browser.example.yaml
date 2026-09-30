@@ -1,0 +1,14 @@
+environment: test
+base_url: http://127.0.0.1:8765
+allowed_origins: [http://127.0.0.1:8765]
+# Include your test backend, analytics collection endpoints and assets explicitly.
+# No requests to other origins are allowed, including redirects and third-party forms.
+allowed_request_origins: []
+timeout_ms: 15000
+# Traces may contain page content and credentials. Local opt-in; not uploaded by CI.
+trace: false
+context:
+  viewport: {width: 1280, height: 800}
+network_rules:
+  - origin: http://127.0.0.1:8765
+    path: /g/collect
