@@ -6,6 +6,9 @@ OPTIONS (description = 'Conversion events (per config/event-taxonomy.yaml) with 
 SELECT
   e.event_date,
   e.event_ts,
+  e.test_run_id,
+  e.submission_id,
+  e.event_id,
   e.session_key,
   e.user_pseudo_id,
   e.canonical_event,

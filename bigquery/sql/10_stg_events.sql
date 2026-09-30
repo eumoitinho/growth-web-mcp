@@ -7,6 +7,10 @@ WITH raw AS (
     PARSE_DATE('%Y%m%d', event_date) AS event_date,
     TIMESTAMP_MICROS(event_timestamp) AS event_ts,
     event_name,
+    (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'test_run_id') AS test_run_id,
+    (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'submission_id') AS submission_id,
+    (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'event_id') AS event_id,
+
     user_pseudo_id,
     (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'ga_session_id') AS ga_session_id,
     (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'ga_session_number') AS ga_session_number,
