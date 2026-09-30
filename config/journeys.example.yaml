@@ -1,0 +1,778 @@
+# Declarative examples: adapt routing, deadlines, consent and selectors to your test environment.
+version: 1
+journeys:
+- id: organic-demo
+  channel: organic
+  description: Synthetic attribution transport test; does not prove advertising-platform
+    attribution.
+  browser:
+    path: /demo
+    query: {}
+    steps:
+    - action: click
+      selector: '[data-qa="consent-accept"]'
+    - action: fill
+      selector: '[name="email"]'
+      value: ${QA_TEST_EMAIL}
+    - action: click
+      selector: '[type="submit"]'
+    - action: wait_visible
+      selector: '[data-qa="success"]'
+    settle_ms: 500
+    referrer: https://www.google.com/
+  expectations:
+  - id: browser-lead
+    source: browser
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields: {}
+    required_fields:
+    - submission_id
+  - id: network-lead
+    source: network
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields: {}
+    required_fields:
+    - submission_id
+  - id: ga4-lead
+    source: ga4
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 172800
+    fields: {}
+    required_fields:
+    - submission_id
+  - id: crm-submission
+    source: hubspot
+    event: submission
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields: {}
+    required_fields:
+    - submission_id
+  - id: crm-contact
+    source: hubspot
+    event: contact
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      lifecyclestage: lead
+    required_fields:
+    - submission_id
+- id: google-ads-demo
+  channel: paid_search
+  description: Synthetic attribution transport test; does not prove advertising-platform
+    attribution.
+  browser:
+    path: /demo
+    query:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+      gclid: synthetic-test-id
+    steps:
+    - action: click
+      selector: '[data-qa="consent-accept"]'
+    - action: fill
+      selector: '[name="email"]'
+      value: ${QA_TEST_EMAIL}
+    - action: click
+      selector: '[type="submit"]'
+    - action: wait_visible
+      selector: '[data-qa="success"]'
+    settle_ms: 500
+  expectations:
+  - id: browser-lead
+    source: browser
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: network-lead
+    source: network
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: ga4-lead
+    source: ga4
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 172800
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: crm-submission
+    source: hubspot
+    event: submission
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: crm-contact
+    source: hubspot
+    event: contact
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      lifecyclestage: lead
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+- id: meta-ads-demo
+  channel: paid_social
+  description: Synthetic attribution transport test; does not prove advertising-platform
+    attribution.
+  browser:
+    path: /demo
+    query:
+      utm_source: facebook
+      utm_medium: paid_social
+      utm_campaign: qa-demo
+      fbclid: synthetic-test-id
+    steps:
+    - action: click
+      selector: '[data-qa="consent-accept"]'
+    - action: fill
+      selector: '[name="email"]'
+      value: ${QA_TEST_EMAIL}
+    - action: click
+      selector: '[type="submit"]'
+    - action: wait_visible
+      selector: '[data-qa="success"]'
+    settle_ms: 500
+  expectations:
+  - id: browser-lead
+    source: browser
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: facebook
+      utm_medium: paid_social
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: network-lead
+    source: network
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: facebook
+      utm_medium: paid_social
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: ga4-lead
+    source: ga4
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 172800
+    fields:
+      utm_source: facebook
+      utm_medium: paid_social
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: crm-submission
+    source: hubspot
+    event: submission
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: facebook
+      utm_medium: paid_social
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: crm-contact
+    source: hubspot
+    event: contact
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      lifecyclestage: lead
+      utm_source: facebook
+      utm_medium: paid_social
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+- id: consent-denied
+  channel: paid_search
+  description: Adapt selectors and test application behavior to this scenario before
+    live execution.
+  browser:
+    path: /demo
+    query:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+      gclid: synthetic-test-id
+      scenario: consent-denied
+    steps:
+    - action: click
+      selector: '[data-qa="consent-deny"]'
+    - action: fill
+      selector: '[name="email"]'
+      value: ${QA_TEST_EMAIL}
+    - action: click
+      selector: '[type="submit"]'
+    - action: wait_visible
+      selector: '[data-qa="success"]'
+    settle_ms: 500
+  expectations:
+  - id: browser-lead
+    source: browser
+    event: generate_lead
+    min_count: 0
+    max_count: 0
+    deadline_seconds: 2
+    fields: {}
+    required_fields: []
+  - id: network-lead
+    source: network
+    event: generate_lead
+    min_count: 0
+    max_count: 0
+    deadline_seconds: 2
+    fields: {}
+    required_fields: []
+  - id: ga4-lead
+    source: ga4
+    event: generate_lead
+    min_count: 0
+    max_count: 0
+    deadline_seconds: 2
+    fields: {}
+    required_fields: []
+  - id: crm-submission
+    source: hubspot
+    event: submission
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: crm-contact
+    source: hubspot
+    event: contact
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      lifecyclestage: lead
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+- id: form-error
+  channel: paid_search
+  description: Adapt selectors and test application behavior to this scenario before
+    live execution.
+  browser:
+    path: /demo
+    query:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+      gclid: synthetic-test-id
+      scenario: form-error
+    steps:
+    - action: click
+      selector: '[data-qa="consent-accept"]'
+    - action: fill
+      selector: '[name="email"]'
+      value: ${QA_TEST_EMAIL}
+    - action: click
+      selector: '[type="submit"]'
+    - action: wait_visible
+      selector: '[data-qa="error"]'
+    settle_ms: 500
+  expectations:
+  - id: browser-lead
+    source: browser
+    event: generate_lead
+    min_count: 0
+    max_count: 0
+    deadline_seconds: 2
+    fields: {}
+    required_fields: []
+  - id: network-lead
+    source: network
+    event: generate_lead
+    min_count: 0
+    max_count: 0
+    deadline_seconds: 2
+    fields: {}
+    required_fields: []
+  - id: ga4-lead
+    source: ga4
+    event: generate_lead
+    min_count: 0
+    max_count: 0
+    deadline_seconds: 2
+    fields: {}
+    required_fields: []
+  - id: crm-submission
+    source: hubspot
+    event: submission
+    min_count: 0
+    max_count: 0
+    deadline_seconds: 2
+    fields: {}
+    required_fields: []
+  - id: crm-contact
+    source: hubspot
+    event: contact
+    min_count: 0
+    max_count: 0
+    deadline_seconds: 2
+    fields: {}
+    required_fields: []
+- id: duplicate-submit
+  channel: paid_search
+  description: Adapt selectors and test application behavior to this scenario before
+    live execution.
+  browser:
+    path: /demo
+    query:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+      gclid: synthetic-test-id
+      scenario: duplicate-submit
+    steps:
+    - action: click
+      selector: '[data-qa="consent-accept"]'
+    - action: fill
+      selector: '[name="email"]'
+      value: ${QA_TEST_EMAIL}
+    - action: click
+      selector: '[type="submit"]'
+    - action: click
+      selector: '[type="submit"]'
+    - action: wait_visible
+      selector: '[data-qa="success"]'
+    settle_ms: 500
+  expectations:
+  - id: browser-lead
+    source: browser
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: network-lead
+    source: network
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: ga4-lead
+    source: ga4
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 172800
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: crm-submission
+    source: hubspot
+    event: submission
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: crm-contact
+    source: hubspot
+    event: contact
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      lifecyclestage: lead
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+- id: existing-contact
+  channel: paid_search
+  description: Adapt selectors and test application behavior to this scenario before
+    live execution.
+  browser:
+    path: /demo
+    query:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+      gclid: synthetic-test-id
+      scenario: existing-contact
+    steps:
+    - action: click
+      selector: '[data-qa="consent-accept"]'
+    - action: fill
+      selector: '[name="email"]'
+      value: ${QA_EXISTING_CONTACT_EMAIL}
+    - action: click
+      selector: '[type="submit"]'
+    - action: wait_visible
+      selector: '[data-qa="success"]'
+    settle_ms: 500
+  expectations:
+  - id: browser-lead
+    source: browser
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: network-lead
+    source: network
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: ga4-lead
+    source: ga4
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 172800
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: crm-submission
+    source: hubspot
+    event: submission
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: crm-contact
+    source: hubspot
+    event: contact
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      lifecyclestage: lead
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+- id: cross-subdomain
+  channel: paid_search
+  description: Adapt selectors and test application behavior to this scenario before
+    live execution.
+  browser:
+    path: /demo
+    query:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+      gclid: synthetic-test-id
+      scenario: cross-subdomain
+    steps:
+    - action: click
+      selector: '[data-qa="consent-accept"]'
+    - action: click
+      selector: '[data-qa="subdomain-form"]'
+    - action: fill
+      selector: '[name="email"]'
+      value: ${QA_TEST_EMAIL}
+    - action: click
+      selector: '[type="submit"]'
+    - action: wait_visible
+      selector: '[data-qa="success"]'
+    settle_ms: 500
+  expectations:
+  - id: browser-lead
+    source: browser
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: network-lead
+    source: network
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: ga4-lead
+    source: ga4
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 172800
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: crm-submission
+    source: hubspot
+    event: submission
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+  - id: crm-contact
+    source: hubspot
+    event: contact
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      lifecyclestage: lead
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+    required_fields:
+    - submission_id
+- id: return-direct
+  channel: paid_search
+  description: Adapt selectors and test application behavior to this scenario before
+    live execution.
+  browser:
+    path: /demo
+    query:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+      gclid: synthetic-test-id
+      scenario: return-direct
+    steps:
+    - action: click
+      selector: '[data-qa="consent-accept"]'
+    - action: click
+      selector: '[data-qa="direct-return"]'
+    - action: fill
+      selector: '[name="email"]'
+      value: ${QA_TEST_EMAIL}
+    - action: click
+      selector: '[type="submit"]'
+    - action: wait_visible
+      selector: '[data-qa="success"]'
+    settle_ms: 500
+  expectations:
+  - id: browser-lead
+    source: browser
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+      first_touch_source: google
+    required_fields:
+    - submission_id
+  - id: network-lead
+    source: network
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+      first_touch_source: google
+    required_fields:
+    - submission_id
+  - id: ga4-lead
+    source: ga4
+    event: generate_lead
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 172800
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+      first_touch_source: google
+    required_fields:
+    - submission_id
+  - id: crm-submission
+    source: hubspot
+    event: submission
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+      first_touch_source: google
+    required_fields:
+    - submission_id
+  - id: crm-contact
+    source: hubspot
+    event: contact
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields:
+      lifecyclestage: lead
+      utm_source: google
+      utm_medium: cpc
+      utm_campaign: qa-demo
+      first_touch_source: google
+    required_fields:
+    - submission_id
+- id: whatsapp-to-crm
+  channel: messaging
+  description: Supply evidence from the messaging integration. A click alone is not
+    a conversation or lead.
+  expectations:
+  - id: click
+    source: browser
+    event: ctw_click
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 120
+    fields: {}
+  - id: conversation
+    source: messaging
+    event: conversation_started
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 600
+    fields: {}
+  - id: contact
+    source: hubspot
+    event: contact
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 600
+    fields: {}
+- id: lead-ads-to-crm
+  channel: paid_social
+  description: Use platform test leads and an integration evidence adapter; no website
+    event expected.
+  expectations:
+  - id: platform-lead
+    source: meta
+    event: lead_received
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 600
+    fields: {}
+  - id: contact
+    source: hubspot
+    event: contact
+    min_count: 1
+    max_count: 1
+    deadline_seconds: 600
+    fields: {}
+  - id: website
+    source: ga4
+    event: generate_lead
+    min_count: 0
+    max_count: 0
+    deadline_seconds: 120
+    fields: {}
+    applicable: false
