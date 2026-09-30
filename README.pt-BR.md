@@ -126,6 +126,10 @@ Leia [SUPPORT.md](SUPPORT.md), [CONTRIBUTING.md](CONTRIBUTING.md) e o [Código d
 
 Projeto em estágio inicial: valide as integrações no seu ambiente antes de usar em produção. Mantido por [eumoitinho](https://github.com/eumoitinho), sob [Apache-2.0](LICENSE). Serviços e dependências de terceiros mantêm seus próprios termos e licenças. Este projeto é independente e não representa endosso das plataformas acima.
 
+## Validação de jornadas
+
+Execute contratos dos serviços, jornadas de navegador e reconciliação GA4/CRM. Veja o [guia de validação](docs/validation.md) para testes locais, configuração de homologação, relatórios e limites atuais.
+
 ## Histórico de estrelas
 
 Se o projeto foi útil, considere deixar uma estrela. O gráfico é fornecido pelo Star History e pode demorar a refletir novas estrelas.

@@ -126,6 +126,10 @@ Read [SUPPORT.md](SUPPORT.md), [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code 
 
 Early-stage project: validate the integrations in your own environment before production use. Maintained by [eumoitinho](https://github.com/eumoitinho), under [Apache-2.0](LICENSE). Third-party services and dependencies retain their own terms and licenses. This is an independent project, not an endorsement by the platforms above.
 
+## Journey validation
+
+Run service contracts, browser journeys and correlated GA4/CRM checks. See the [validation guide](docs/validation.md) (Portuguese) for local tests, test-account setup, evidence reports and current limitations.
+
 ## Star history
 
 If this project helps you, consider starring it. The chart is provided by Star History and may take time to reflect new stars.

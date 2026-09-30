@@ -48,3 +48,7 @@ python3 scripts/render_bq.py --project example-project
 ```
 
 Live integration checks require your own accounts. Explain which checks were not run and why.
+
+## Journey and integration validation
+
+See [docs/validation.md](docs/validation.md) for the complete test matrix, separate MCP 1/2 environments, coverage checks and test-account setup. Never use a production form to run synthetic tests.

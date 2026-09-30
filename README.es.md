@@ -126,6 +126,10 @@ Lee [SUPPORT.md](SUPPORT.md), [CONTRIBUTING.md](CONTRIBUTING.md) y el [Código d
 
 Proyecto en etapa inicial: valida las integraciones en tu entorno antes de usarlas en producción. Mantenido por [eumoitinho](https://github.com/eumoitinho), bajo [Apache-2.0](LICENSE). Los servicios y dependencias de terceros mantienen sus propios términos y licencias. Este proyecto es independiente y no implica respaldo de las plataformas anteriores.
 
+## Validación de recorridos
+
+Ejecuta contratos de servicios, recorridos del navegador y conciliación GA4/CRM. Consulta la [guía de validación](docs/validation.md) (portugués) para pruebas locales, cuentas de prueba, informes y límites actuales.
+
 ## Historial de estrellas
 
 Si el proyecto te resulta útil, considera darle una estrella. El gráfico lo proporciona Star History y puede tardar en reflejar nuevas estrellas.
