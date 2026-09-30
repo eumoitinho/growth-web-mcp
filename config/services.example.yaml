@@ -1,0 +1,88 @@
+# Copy to services.local.yaml. Tokens stay in environment variables.
+# Required tool names must be checked against the pinned deployment's tools/list.
+services:
+  - name: ga4
+    url: ${GROWTH_MCP_GA4_URL}
+    headers: {Authorization: '${QA_GOOGLE_AUTH_HEADER}'}
+    require_unauthenticated_denial: true
+    required_tools: [list_data_streams, list_key_events]
+    calls:
+      - tool: list_data_streams
+        read_only: true
+        arguments: {property_id: '${QA_GA4_PROPERTY_ID}'}
+        schema: {type: array}
+  - name: google-ads
+    url: ${GROWTH_MCP_GOOGLE_ADS_URL}
+    headers: {Authorization: '${QA_GOOGLE_AUTH_HEADER}'}
+    require_unauthenticated_denial: true
+    required_tools: [search]
+    calls:
+      - tool: search
+        read_only: true
+        arguments:
+          customer_id: ${QA_ADS_CUSTOMER_ID}
+          query: SELECT customer.id FROM customer LIMIT 1
+  - name: gtm
+    url: ${GROWTH_MCP_GTM_URL}
+    headers: {Authorization: '${QA_GOOGLE_AUTH_HEADER}'}
+    require_unauthenticated_denial: true
+    required_tools: [gtm_container, gtm_tag]
+    calls:
+      - tool: gtm_container
+        read_only: true
+        arguments: {action: list, accountId: '${QA_GTM_ACCOUNT_ID}'}
+  - name: hubspot
+    url: ${GROWTH_MCP_HUBSPOT_URL}
+    headers: {Authorization: '${QA_GOOGLE_AUTH_HEADER}'}
+    require_unauthenticated_denial: true
+    required_tools: [hubspot-list-forms, hubspot-list-pipelines]
+    forbidden_tools: [hubspot-batch-create-objects, hubspot-batch-update-objects]
+    calls:
+      - tool: hubspot-list-forms
+        read_only: true
+        arguments: {limit: 1}
+        schema: {type: object}
+  - name: meta
+    url: ${GROWTH_MCP_META_URL}
+    headers: {Authorization: '${QA_GOOGLE_AUTH_HEADER}'}
+    require_unauthenticated_denial: true
+    required_tools: [list_ad_accounts, get_insights]
+    calls:
+      - tool: list_ad_accounts
+        read_only: true
+        schema: {type: object, required: [data]}
+  - name: bigquery
+    url: https://bigquery.googleapis.com/mcp
+    headers: {Authorization: '${QA_GOOGLE_ACCESS_HEADER}'}
+    require_unauthenticated_denial: true
+    required_tools: [execute_sql]
+    calls:
+      - tool: execute_sql
+        read_only: true
+        arguments: {project_id: '${QA_GCP_PROJECT}', query: 'SELECT 1 AS probe'}
+  - name: wordpress
+    url: ${WP_MCP_URL}
+    headers: {Authorization: '${QA_WP_AUTH_HEADER}'}
+    require_unauthenticated_denial: true
+    required_tools: [mcp-adapter-discover-abilities, mcp-adapter-execute-ability]
+    calls:
+      - tool: mcp-adapter-execute-ability
+        read_only: true
+        arguments: {ability_name: growth/list-active-plugins, parameters: {}}
+  - name: site-browser
+    url: ${GROWTH_MCP_SITE_BROWSER_URL}
+    headers: {Authorization: '${QA_GOOGLE_AUTH_HEADER}'}
+    require_unauthenticated_denial: true
+    required_tools: [list_pages, new_page]
+    calls:
+      - tool: list_pages
+        read_only: true
+  - name: gateway
+    url: ${GROWTH_MCP_GATEWAY_URL}
+    headers: {Authorization: '${QA_GATEWAY_AUTH_HEADER}'}
+    require_unauthenticated_denial: true
+    required_tools: [ga4_list_data_streams, gtm_container, hubspot-list-forms]
+    calls:
+      - tool: ga4_list_data_streams
+        read_only: true
+        arguments: {property_id: '${QA_GA4_PROPERTY_ID}'}
