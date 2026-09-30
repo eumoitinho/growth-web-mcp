@@ -21,7 +21,9 @@ services:
         read_only: true
         arguments:
           customer_id: ${QA_ADS_CUSTOMER_ID}
-          query: SELECT customer.id FROM customer LIMIT 1
+          fields: [customer.id]
+          resource: customer
+          limit: 1
   - name: gtm
     url: ${GROWTH_MCP_GTM_URL}
     headers: {Authorization: '${QA_GOOGLE_AUTH_HEADER}'}

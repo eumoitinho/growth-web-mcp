@@ -1,4 +1,3 @@
-# Declarative examples: adapt routing, deadlines, consent and selectors to your test environment.
 version: 1
 journeys:
 - id: organic-demo
@@ -67,6 +66,8 @@ journeys:
       lifecyclestage: lead
     required_fields:
     - submission_id
+  correlate_by:
+  - submission_id
 - id: google-ads-demo
   channel: paid_search
   description: Synthetic attribution transport test; does not prove advertising-platform
@@ -151,6 +152,8 @@ journeys:
       utm_campaign: qa-demo
     required_fields:
     - submission_id
+  correlate_by:
+  - submission_id
 - id: meta-ads-demo
   channel: paid_social
   description: Synthetic attribution transport test; does not prove advertising-platform
@@ -235,6 +238,8 @@ journeys:
       utm_campaign: qa-demo
     required_fields:
     - submission_id
+  correlate_by:
+  - submission_id
 - id: consent-denied
   channel: paid_search
   description: Adapt selectors and test application behavior to this scenario before
@@ -308,6 +313,8 @@ journeys:
       utm_campaign: qa-demo
     required_fields:
     - submission_id
+  correlate_by:
+  - submission_id
 - id: form-error
   channel: paid_search
   description: Adapt selectors and test application behavior to this scenario before
@@ -372,6 +379,8 @@ journeys:
     deadline_seconds: 2
     fields: {}
     required_fields: []
+  correlate_by:
+  - submission_id
 - id: duplicate-submit
   channel: paid_search
   description: Adapt selectors and test application behavior to this scenario before
@@ -459,6 +468,8 @@ journeys:
       utm_campaign: qa-demo
     required_fields:
     - submission_id
+  correlate_by:
+  - submission_id
 - id: existing-contact
   channel: paid_search
   description: Adapt selectors and test application behavior to this scenario before
@@ -544,6 +555,8 @@ journeys:
       utm_campaign: qa-demo
     required_fields:
     - submission_id
+  correlate_by:
+  - submission_id
 - id: cross-subdomain
   channel: paid_search
   description: Adapt selectors and test application behavior to this scenario before
@@ -631,6 +644,8 @@ journeys:
       utm_campaign: qa-demo
     required_fields:
     - submission_id
+  correlate_by:
+  - submission_id
 - id: return-direct
   channel: paid_search
   description: Adapt selectors and test application behavior to this scenario before
@@ -723,6 +738,8 @@ journeys:
       first_touch_source: google
     required_fields:
     - submission_id
+  correlate_by:
+  - submission_id
 - id: whatsapp-to-crm
   channel: messaging
   description: Supply evidence from the messaging integration. A click alone is not

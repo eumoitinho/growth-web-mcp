@@ -79,6 +79,11 @@ def reconcile(suite, evidence, now=None):
             fresh = source and (timestamp(source['checked_at']) - started).total_seconds() >= deadline
             item.update(status='FAIL' if fresh else 'ERROR', reason='Missing records after deadline' if fresh else 'Evidence source not checked after deadline')
         results.append(item)
+    for key in journey.get('correlate_by', []):
+        relevant = {(r['source'], r['event']) for r in journey['expectations'] if r.get('applicable', True) and r['max_count'] > 0}
+        values = {o['fields'][key] for o in evidence['observations'] if (o['source'], o['event']) in relevant and o['fields'].get(key) not in (None, '')}
+        if len(values) > 1:
+            results.append({'id': f'correlation-{key}', 'source': 'cross-system', 'status': 'FAIL', 'count': len(values), 'reason': 'Correlation identifier differs across records'})
     statuses = {r['status'] for r in results}
     status = next((s for s in ['FAIL', 'ERROR', 'PENDING'] if s in statuses), 'PASS')
     if statuses == {'NOT_APPLICABLE'}:

@@ -78,3 +78,12 @@ def test_invalid_counts_and_duplicate_ids(pair):
     suite, _ = pair
     suite['journeys'][0]['expectations'][0]['max_count'] = 0
     with pytest.raises(ValueError): validate(suite, 'journeys')
+
+
+def test_cross_system_submission_ids_must_agree(pair):
+    suite, evidence = pair
+    suite['journeys'][0]['correlate_by'] = ['submission_id']
+    suite['journeys'][0]['expectations'].append({'id':'ga4','source':'ga4','event':'generate_lead','min_count':1,'max_count':1,'deadline_seconds':10})
+    evidence['sources']['ga4']={'status':'complete','checked_at':LATER}
+    evidence['observations'].append({'run_id':'run-1','source':'ga4','event':'generate_lead','record_id':'2','occurred_at':LATER,'fields':{'submission_id':'different'}})
+    assert reconcile(suite,evidence,now=NOW)['status']=='FAIL'
